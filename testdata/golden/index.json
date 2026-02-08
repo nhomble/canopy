@@ -1,0 +1,155 @@
+{
+  "repo_id": "Hexagonal-Architecture-DDD",
+  "patterns": ["Hexagonal Architecture"],
+  "components": [
+    {
+      "id": "customer-service",
+      "name": "Customer Microservice",
+      "layer": "bounded-context",
+      "code_refs": ["Customer/**"],
+      "provides": {
+        "interface": "CustomerController",
+        "symbols": ["createCustomer", "login", "deleteCustomer", "updateCustomer"]
+      },
+      "analyzed": false
+    },
+    {
+      "id": "order-service",
+      "name": "Order Microservice",
+      "layer": "bounded-context",
+      "code_refs": ["Order/**"],
+      "provides": {
+        "interface": "OrderController",
+        "symbols": ["createOrder", "getOrder"]
+      },
+      "analyzed": false
+    },
+    {
+      "id": "product-service",
+      "name": "Product Microservice",
+      "layer": "bounded-context",
+      "code_refs": ["Product/**"],
+      "provides": {
+        "interface": "ProductController",
+        "symbols": ["createProduct", "deleteProduct", "getProduct", "getProducts"]
+      },
+      "analyzed": false
+    }
+  ],
+  "archetypes": {
+    "controllers": [
+      {
+        "id": "customer-controller",
+        "file": "Customer/src/main/java/com/jmendoza/swa/hexagonal/customer/application/rest/controller/CustomerController.java",
+        "symbol": "CustomerController",
+        "technology": "spring-mvc",
+        "entry_point_type": "http",
+        "routes": ["/v1/customers", "/v1/customers/login", "/v1/customers/{id}"]
+      },
+      {
+        "id": "order-controller",
+        "file": "Order/application/src/main/java/com/jmendoza/swa/hexagonal/order/application/rest/controller/OrderController.java",
+        "symbol": "OrderController",
+        "technology": "spring-mvc",
+        "entry_point_type": "http",
+        "routes": ["/v1/orders", "/v1/orders/{orderId}"]
+      },
+      {
+        "id": "product-controller",
+        "file": "Product/src/main/java/com/jmendoza/swa/hexagonal/product/application/rest/controller/ProductController.java",
+        "symbol": "ProductController",
+        "technology": "spring-mvc",
+        "entry_point_type": "http",
+        "routes": ["/v1/products", "/v1/products/{id}"]
+      }
+    ],
+    "services": [
+      {
+        "id": "create-customer-service",
+        "file": "Customer/src/main/java/com/jmendoza/swa/hexagonal/customer/domain/services/CreateCustomerService.java",
+        "symbol": "CreateCustomerService",
+        "purpose": "Handles customer creation business logic"
+      },
+      {
+        "id": "customer-login-service",
+        "file": "Customer/src/main/java/com/jmendoza/swa/hexagonal/customer/domain/services/CustomerLoginService.java",
+        "symbol": "CustomerLoginService",
+        "purpose": "Handles customer authentication"
+      },
+      {
+        "id": "delete-customer-service",
+        "file": "Customer/src/main/java/com/jmendoza/swa/hexagonal/customer/domain/services/DeleteCustomerService.java",
+        "symbol": "DeleteCustomerService",
+        "purpose": "Handles customer deletion"
+      },
+      {
+        "id": "update-customer-service",
+        "file": "Customer/src/main/java/com/jmendoza/swa/hexagonal/customer/domain/services/UpdateCustomerService.java",
+        "symbol": "UpdateCustomerService",
+        "purpose": "Handles customer updates"
+      },
+      {
+        "id": "create-order-service",
+        "file": "Order/domain/src/main/java/com/jmendoza/swa/hexagonal/domain/services/CreateOrderService.java",
+        "symbol": "CreateOrderService",
+        "purpose": "Handles order creation"
+      },
+      {
+        "id": "get-order-service",
+        "file": "Order/domain/src/main/java/com/jmendoza/swa/hexagonal/domain/services/GetOrderService.java",
+        "symbol": "GetOrderService",
+        "purpose": "Handles order retrieval"
+      }
+    ],
+    "ports": [
+      {
+        "id": "create-customer-usecase",
+        "file": "Customer/src/main/java/com/jmendoza/swa/hexagonal/customer/domain/ports/inbound/CreateCustomerUseCase.java",
+        "symbol": "CreateCustomerUseCase",
+        "purpose": "Inbound port for customer creation"
+      },
+      {
+        "id": "create-customer-port",
+        "file": "Customer/src/main/java/com/jmendoza/swa/hexagonal/customer/domain/ports/outbound/CreateCustomerPort.java",
+        "symbol": "CreateCustomerPort",
+        "purpose": "Outbound port for customer persistence"
+      }
+    ],
+    "adapters": [
+      {
+        "id": "create-customer-adapter",
+        "file": "Customer/src/main/java/com/jmendoza/swa/hexagonal/customer/infrastructure/databases/mongo/CreateCustomerAdapter.java",
+        "symbol": "CreateCustomerAdapter",
+        "technology": "mongodb",
+        "purpose": "MongoDB adapter for customer creation"
+      },
+      {
+        "id": "password-encode-adapter",
+        "file": "Customer/src/main/java/com/jmendoza/swa/hexagonal/customer/infrastructure/security/PasswordEncodeAdapter.java",
+        "symbol": "PasswordEncodeAdapter",
+        "purpose": "Security adapter for password encoding"
+      }
+    ]
+  },
+  "relationships": [
+    {"from": "customer-controller", "to": "create-customer-service", "type": "calls", "flow": "create-customer"},
+    {"from": "create-customer-service", "to": "create-customer-adapter", "type": "calls", "flow": "create-customer"},
+    {"from": "create-customer-service", "to": "password-encode-adapter", "type": "calls", "flow": "create-customer"},
+    {"from": "order-controller", "to": "create-order-service", "type": "calls", "flow": "create-order"},
+    {"from": "order-controller", "to": "get-order-service", "type": "calls", "flow": "get-order"}
+  ],
+  "flows": [
+    {
+      "id": "create-customer",
+      "name": "Create Customer",
+      "steps": ["customer-controller", "create-customer-service", "password-encode-adapter", "create-customer-adapter"],
+      "pattern": "controller -> service -> adapter"
+    },
+    {
+      "id": "create-order",
+      "name": "Create Order",
+      "steps": ["order-controller", "create-order-service"],
+      "pattern": "controller -> service"
+    }
+  ]
+}

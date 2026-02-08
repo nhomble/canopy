@@ -1,0 +1,15 @@
+# Binary
+/arch-index
+
+# Generated analysis artifacts
+analysis-result.json
+prompt.md
+
+# Spec / design docs (not source)
+architecture-navigator-spec.md
+
+# Claude Code
+.claude/
+
+# .arch is generated per-repo, not part of source
+.arch/

@@ -1,0 +1,48 @@
+name: "Model-View-Controller"
+aliases: ["MVC"]
+description: |
+  Separates application into three interconnected components:
+  Models (data), Views (presentation), Controllers (logic).
+
+layers:
+  - id: "models"
+    description: "Data structures and business logic"
+    typical_files:
+      - "*/models/**"
+      - "*Model.*"
+
+  - id: "views"
+    description: "Presentation layer - templates, UI"
+    typical_files:
+      - "*/views/**"
+      - "*/templates/**"
+      - "*.jsx"
+      - "*.vue"
+      - "*.ejs"
+
+  - id: "controllers"
+    description: "Request handling and coordination"
+    typical_files:
+      - "*/controllers/**"
+      - "*Controller.*"
+
+archetypes:
+  model:
+    description: "Data structure with business logic"
+    typical_files: ["*Model.*", "*/models/**"]
+
+  view:
+    description: "Presentation template or component"
+    typical_files: ["*/views/**", "*/templates/**"]
+
+  controller:
+    description: "Request handler coordinating models and views"
+    typical_files: ["*Controller.*", "*/controllers/**"]
+
+flow_patterns:
+  - "Request -> Controller -> Model -> View -> Response"
+
+anti_patterns:
+  - "Business logic in views"
+  - "Direct database access in controllers"
+  - "Views modifying model state"

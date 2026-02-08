@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/nicolas/arch-index/index-schema.json",
+  "title": "ArchIndex",
+  "description": "Root data structure for codebase architectural analysis produced by arch-index.",
+  "type": "object",
+  "required": [
+    "repo_id",
+    "patterns",
+    "components",
+    "archetypes",
+    "relationships"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "repo_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for the repository."
+    },
+    "patterns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Architectural patterns detected in the codebase."
+    },
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Logical groupings of code (services, modules, bounded contexts).",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "layer",
+          "code_refs"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique component identifier."
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable component name."
+          },
+          "layer": {
+            "type": "string",
+            "description": "Architectural layer this component belongs to."
+          },
+          "code_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "File or directory paths that belong to this component."
+          },
+          "provides": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "interface": {
+                "type": "string",
+                "description": "Primary interface or contract this component exposes."
+              },
+              "symbols": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Exported symbols (functions, classes, types)."
+              }
+            }
+          },
+          "nested_analysis": {
+            "type": "string",
+            "description": "Path to a nested arch-index analysis for this component."
+          },
+          "analyzed": {
+            "type": "boolean",
+            "description": "Whether this component has been fully analyzed."
+          }
+        }
+      }
+    },
+    "archetypes": {
+      "type": "object",
+      "description": "Code elements grouped by architectural role.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "id",
+            "file"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Unique archetype instance identifier."
+            },
+            "file": {
+              "type": "string",
+              "description": "File path where this archetype is defined."
+            },
+            "symbol": {
+              "type": "string",
+              "description": "Primary symbol name (class, function, etc.)."
+            },
+            "technology": {
+              "type": "string",
+              "description": "Framework or library this archetype uses."
+            },
+            "entry_point_type": {
+              "type": "string",
+              "description": "Type of entry point (http, grpc, cli, etc.)."
+            },
+            "routes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "HTTP routes or endpoints handled."
+            },
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Message queue topics consumed or produced."
+            },
+            "applies_to": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Components or routes this archetype applies to."
+            },
+            "order": {
+              "type": "integer",
+              "description": "Execution order (e.g., middleware ordering)."
+            },
+            "purpose": {
+              "type": "string",
+              "description": "Brief description of what this archetype does."
+            },
+            "entity": {
+              "type": "string",
+              "description": "Domain entity this archetype manages."
+            },
+            "target_service": {
+              "type": "string",
+              "description": "External service this archetype communicates with."
+            }
+          }
+        }
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "description": "Dependencies and interactions between components or archetypes.",
+      "items": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "type"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Source component or archetype ID."
+          },
+          "to": {
+            "type": "string",
+            "description": "Target component or archetype ID."
+          },
+          "type": {
+            "type": "string",
+            "description": "Relationship type (e.g., depends-on, calls, implements)."
+          },
+          "flow": {
+            "type": "string",
+            "description": "Optional flow this relationship belongs to."
+          }
+        }
+      }
+    },
+    "flows": {
+      "type": "array",
+      "description": "Request or data flows through the system.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "steps"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique flow identifier."
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable flow name."
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Ordered list of component/archetype IDs in this flow."
+          },
+          "pattern": {
+            "type": "string",
+            "description": "Architectural pattern this flow exemplifies."
+          }
+        }
+      }
+    }
+  }
+}

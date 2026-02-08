@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>arch-index</title>
+<script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+<script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
+<script src="https://unpkg.com/cytoscape-dagre@2.5.0/cytoscape-dagre.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text-muted: #8b949e;
+  --accent: #58a6ff;
+  --core: #4A90D9;
+  --application: #7B68EE;
+  --adapters: #F5A623;
+  --infrastructure: #D0021B;
+  --bounded-context: #50C878;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.toolbar h1 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-right: 8px;
+}
+
+.toolbar .sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+}
+
+.btn-group {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.btn-group button {
+  background: var(--surface);
+  color: var(--text-muted);
+  border: none;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  border-right: 1px solid var(--border);
+}
+
+.btn-group button:last-child { border-right: none; }
+
+.btn-group button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-group button:hover:not(.active) {
+  background: #21262d;
+}
+
+select {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.legend {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* Main area */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+#cy {
+  flex: 1;
+  background: var(--bg);
+}
+
+/* Sidebar */
+.sidebar {
+  width: 320px;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 16px;
+  display: none;
+  flex-shrink: 0;
+}
+
+.sidebar.open { display: block; }
+
+.sidebar h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--accent);
+}
+
+.sidebar .close-btn {
+  float: right;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.sidebar .close-btn:hover { color: var(--text); }
+
+.detail-section {
+  margin-bottom: 16px;
+}
+
+.detail-section h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.detail-section p, .detail-section li {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.detail-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.detail-section li {
+  padding: 2px 0;
+}
+
+.layer-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.flow-link {
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.flow-link:hover { opacity: 0.8; }
+
+.focus-btn {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  margin-top: 8px;
+}
+
+.focus-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.focus-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  background: #21262d;
+  color: var(--text-muted);
+  margin: 1px 2px;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Editor focus (live cursor from Neovim) */
+@keyframes editor-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(88, 166, 255, 0.5); }
+  50% { box-shadow: 0 0 0 8px rgba(88, 166, 255, 0); }
+}
+
+.editor-indicator {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.editor-indicator.connected {
+  display: flex;
+}
+
+.editor-indicator .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: editor-pulse 2s ease-in-out infinite;
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>arch-index</h1>
+  <div class="sep"></div>
+  <div class="btn-group">
+    <button id="btn-components" class="active" onclick="setView('components')">Components</button>
+    <button id="btn-archetypes" onclick="setView('archetypes')">Archetypes</button>
+  </div>
+  <div class="sep"></div>
+  <select id="flow-select" onchange="selectFlow(this.value)">
+    <option value="">All flows</option>
+  </select>
+  <div class="editor-indicator" id="editor-indicator"><div class="dot"></div><span>editor linked</span></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--core)"></div>core</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--application)"></div>application</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--adapters)"></div>adapters</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--infrastructure)"></div>infrastructure</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--bounded-context)"></div>bounded-context</div>
+  </div>
+</div>
+
+<div class="main">
+  <div id="cy"></div>
+  <div class="sidebar" id="sidebar">
+    <button class="close-btn" onclick="closeSidebar()">&times;</button>
+    <div id="sidebar-content"></div>
+  </div>
+</div>
+
+<script>
+const LAYER_COLORS = {
+  'core': '#4A90D9',
+  'application': '#7B68EE',
+  'adapters': '#F5A623',
+  'infrastructure': '#D0021B',
+  'bounded-context': '#50C878',
+};
+
+const DEFAULT_COLOR = '#8b949e';
+
+let graphData = null;
+let cy = null;
+let currentView = 'components';
+let currentFlow = '';
+
+// Fetch graph data and initialize
+fetch('/graph')
+  .then(r => r.json())
+  .then(data => {
+    graphData = data;
+    populateFlowDropdown();
+    initCytoscape();
+    renderView();
+  });
+
+function populateFlowDropdown() {
+  const sel = document.getElementById('flow-select');
+  (graphData.flows || []).forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f.id;
+    opt.textContent = f.name;
+    sel.appendChild(opt);
+  });
+}
+
+function layerColor(layer) {
+  return LAYER_COLORS[layer] || DEFAULT_COLOR;
+}
+
+function initCytoscape() {
+  cy = cytoscape({
+    container: document.getElementById('cy'),
+    style: [
+      // Component nodes
+      {
+        selector: 'node[type="component"]',
+        style: {
+          'label': 'data(label)',
+          'text-valign': 'center',
+          'text-halign': 'center',
+          'background-color': 'data(color)',
+          'color': '#fff',
+          'font-size': '12px',
+          'text-wrap': 'wrap',
+          'text-max-width': '120px',
+          'width': 140,
+          'height': 50,
+          'shape': 'round-rectangle',
+          'border-width': 2,
+          'border-color': 'data(color)',
+          'background-opacity': 0.15,
+          'text-outline-width': 0,
+        }
+      },
+      // Compound (parent) nodes in archetype view
+      {
+        selector: 'node[type="compound"]',
+        style: {
+          'label': 'data(label)',
+          'text-valign': 'top',
+          'text-halign': 'center',
+          'background-color': 'data(color)',
+          'background-opacity': 0.07,
+          'border-width': 2,
+          'border-color': 'data(color)',
+          'border-opacity': 0.4,
+          'color': 'data(color)',
+          'font-size': '11px',
+          'font-weight': 'bold',
+          'padding': '20px',
+          'shape': 'round-rectangle',
+          'text-margin-y': -8,
+        }
+      },
+      // Archetype child nodes
+      {
+        selector: 'node[type="archetype"]',
+        style: {
+          'label': 'data(label)',
+          'text-valign': 'center',
+          'text-halign': 'center',
+          'background-color': 'data(color)',
+          'color': '#fff',
+          'font-size': '10px',
+          'text-wrap': 'wrap',
+          'text-max-width': '100px',
+          'width': 120,
+          'height': 36,
+          'shape': 'round-rectangle',
+          'background-opacity': 0.25,
+          'border-width': 1,
+          'border-color': 'data(color)',
+          'text-outline-width': 0,
+        }
+      },
+      // Edges
+      {
+        selector: 'edge',
+        style: {
+          'width': 'data(weight)',
+          'line-color': '#30363d',
+          'target-arrow-color': '#30363d',
+          'target-arrow-shape': 'triangle',
+          'curve-style': 'bezier',
+          'arrow-scale': 0.8,
+          'opacity': 0.7,
+        }
+      },
+      // Edge labels
+      {
+        selector: 'edge[label]',
+        style: {
+          'label': 'data(label)',
+          'font-size': '9px',
+          'color': '#8b949e',
+          'text-rotation': 'autorotate',
+          'text-margin-y': -8,
+        }
+      },
+      // Highlighted
+      {
+        selector: '.highlighted',
+        style: {
+          'opacity': 1,
+          'z-index': 10,
+        }
+      },
+      {
+        selector: 'node.highlighted',
+        style: {
+          'border-width': 3,
+          'background-opacity': 0.35,
+        }
+      },
+      {
+        selector: 'edge.highlighted',
+        style: {
+          'line-color': '#58a6ff',
+          'target-arrow-color': '#58a6ff',
+          'width': 3,
+          'opacity': 1,
+          'z-index': 10,
+        }
+      },
+      // Dimmed
+      {
+        selector: '.dimmed',
+        style: {
+          'opacity': 0.15,
+        }
+      },
+      // Selected node
+      {
+        selector: 'node.selected-node',
+        style: {
+          'border-width': 3,
+          'border-color': '#58a6ff',
+          'background-opacity': 0.35,
+        }
+      },
+      // Editor-focused node (live cursor from editor)
+      {
+        selector: 'node.editor-focus',
+        style: {
+          'border-width': 4,
+          'border-color': '#58a6ff',
+          'background-opacity': 0.4,
+          'z-index': 20,
+        }
+      },
+    ],
+    layout: { name: 'preset' },
+    wheelSensitivity: 0.3,
+  });
+
+  cy.on('tap', 'node', function(evt) {
+    const node = evt.target;
+    if (node.data('type') === 'compound') return;
+    showDetails(node.data());
+  });
+
+  cy.on('tap', function(evt) {
+    if (evt.target === cy) {
+      closeSidebar();
+      clearSelection();
+      clearNeighborhoodFocus();
+    }
+  });
+}
+
+function renderView() {
+  if (!cy || !graphData) return;
+
+  cy.elements().remove();
+
+  if (currentView === 'components') {
+    renderComponentView();
+  } else {
+    renderArchetypeView();
+  }
+
+  runLayout();
+}
+
+function renderComponentView() {
+  const elements = [];
+
+  (graphData.components || []).forEach(comp => {
+    elements.push({
+      group: 'nodes',
+      data: {
+        id: comp.id,
+        label: comp.name,
+        type: 'component',
+        color: layerColor(comp.layer),
+        layer: comp.layer,
+        componentData: comp,
+      }
+    });
+  });
+
+  (graphData.component_edges || []).forEach(edge => {
+    elements.push({
+      group: 'edges',
+      data: {
+        id: 'ce-' + edge.from + '-' + edge.to,
+        source: edge.from,
+        target: edge.to,
+        weight: Math.min(1 + edge.count, 5),
+        label: edge.types.join(', '),
+        count: edge.count,
+      }
+    });
+  });
+
+  cy.add(elements);
+}
+
+function renderArchetypeView() {
+  const elements = [];
+
+  // Parent compound nodes (components)
+  (graphData.components || []).forEach(comp => {
+    elements.push({
+      group: 'nodes',
+      data: {
+        id: comp.id,
+        label: comp.name,
+        type: 'compound',
+        color: layerColor(comp.layer),
+        layer: comp.layer,
+        componentData: comp,
+      }
+    });
+
+    // Child archetype nodes
+    (comp.archetypes || []).forEach(arch => {
+      elements.push({
+        group: 'nodes',
+        data: {
+          id: arch.id,
+          label: arch.symbol || arch.id,
+          type: 'archetype',
+          parent: comp.id,
+          color: layerColor(comp.layer),
+          category: arch.category,
+          archetypeData: arch,
+          componentId: comp.id,
+        }
+      });
+    });
+  });
+
+  // Archetype-level edges (relationships)
+  (graphData.relationships || []).forEach((rel, i) => {
+    // Only add edge if both nodes exist
+    const fromExists = elements.some(e => e.data.id === rel.from);
+    const toExists = elements.some(e => e.data.id === rel.to);
+    if (fromExists && toExists) {
+      elements.push({
+        group: 'edges',
+        data: {
+          id: 'rel-' + i,
+          source: rel.from,
+          target: rel.to,
+          weight: 1.5,
+          label: rel.type,
+          relType: rel.type,
+          flow: rel.flow || '',
+        }
+      });
+    }
+  });
+
+  cy.add(elements);
+}
+
+function runLayout() {
+  cy.layout({
+    name: 'dagre',
+    rankDir: 'LR',
+    nodeSep: 40,
+    rankSep: 80,
+    edgeSep: 20,
+    padding: 40,
+    animate: true,
+    animationDuration: 300,
+  }).run();
+}
+
+// View toggle
+function setView(view) {
+  currentView = view;
+  document.getElementById('btn-components').classList.toggle('active', view === 'components');
+  document.getElementById('btn-archetypes').classList.toggle('active', view === 'archetypes');
+  currentFlow = '';
+  document.getElementById('flow-select').value = '';
+  closeSidebar();
+  renderView();
+}
+
+// Flow highlighting
+function selectFlow(flowId) {
+  currentFlow = flowId;
+  clearHighlights();
+
+  if (!flowId) return;
+
+  const flow = (graphData.flows || []).find(f => f.id === flowId);
+  if (!flow) return;
+
+  cy.elements().addClass('dimmed');
+
+  if (currentView === 'components') {
+    highlightFlowComponents(flow);
+  } else {
+    highlightFlowArchetypes(flow);
+  }
+}
+
+function highlightFlowComponents(flow) {
+  // Find component IDs for each step
+  const compIds = new Set();
+  const archetypeToComp = {};
+  (graphData.components || []).forEach(comp => {
+    (comp.archetypes || []).forEach(a => {
+      archetypeToComp[a.id] = comp.id;
+    });
+  });
+
+  flow.steps.forEach(step => {
+    const compId = archetypeToComp[step] || step;
+    compIds.add(compId);
+  });
+
+  compIds.forEach(id => {
+    const node = cy.getElementById(id);
+    if (node.length) {
+      node.removeClass('dimmed').addClass('highlighted');
+    }
+  });
+
+  // Highlight edges between consecutive component pairs
+  const compList = [];
+  flow.steps.forEach(step => {
+    const compId = archetypeToComp[step] || step;
+    if (compList.length === 0 || compList[compList.length - 1] !== compId) {
+      compList.push(compId);
+    }
+  });
+
+  for (let i = 0; i < compList.length - 1; i++) {
+    const edges = cy.edges().filter(e =>
+      e.data('source') === compList[i] && e.data('target') === compList[i + 1]
+    );
+    edges.removeClass('dimmed').addClass('highlighted');
+  }
+}
+
+function highlightFlowArchetypes(flow) {
+  // Highlight each step node
+  flow.steps.forEach(step => {
+    const node = cy.getElementById(step);
+    if (node.length) {
+      node.removeClass('dimmed').addClass('highlighted');
+      // Also un-dim parent
+      const parent = node.parent();
+      if (parent.length) {
+        parent.removeClass('dimmed').addClass('highlighted');
+      }
+    }
+  });
+
+  // Highlight edges between consecutive steps
+  for (let i = 0; i < flow.steps.length - 1; i++) {
+    const edges = cy.edges().filter(e =>
+      e.data('source') === flow.steps[i] && e.data('target') === flow.steps[i + 1]
+    );
+    edges.removeClass('dimmed').addClass('highlighted');
+  }
+}
+
+let neighborhoodFocusId = null;
+
+function focusNeighborhood(nodeId) {
+  if (!cy) return;
+
+  // Toggle off if already focused on this node
+  if (neighborhoodFocusId === nodeId) {
+    clearNeighborhoodFocus();
+    return;
+  }
+
+  neighborhoodFocusId = nodeId;
+  clearHighlights();
+
+  const node = cy.getElementById(nodeId);
+  if (!node.length) return;
+
+  cy.elements().addClass('dimmed');
+
+  // The node itself
+  node.removeClass('dimmed').addClass('highlighted');
+
+  // Direct neighbor nodes and connecting edges
+  const neighborhood = node.neighborhood();
+  neighborhood.removeClass('dimmed').addClass('highlighted');
+
+  // In archetype view, also un-dim parent compounds of highlighted nodes
+  neighborhood.nodes().forEach(n => {
+    const parent = n.parent();
+    if (parent.length) parent.removeClass('dimmed');
+  });
+  const nodeParent = node.parent();
+  if (nodeParent.length) nodeParent.removeClass('dimmed');
+}
+
+function clearNeighborhoodFocus() {
+  neighborhoodFocusId = null;
+  clearHighlights();
+}
+
+function clearHighlights() {
+  if (!cy) return;
+  cy.elements().removeClass('dimmed highlighted');
+}
+
+// Sidebar
+function showDetails(data) {
+  clearSelection();
+  const node = cy.getElementById(data.id);
+  if (node.length) node.addClass('selected-node');
+
+  const sidebar = document.getElementById('sidebar');
+  const content = document.getElementById('sidebar-content');
+  sidebar.classList.add('open');
+
+  if (data.type === 'component' || data.type === 'compound') {
+    content.innerHTML = renderComponentDetails(data.componentData, data.id);
+  } else if (data.type === 'archetype') {
+    content.innerHTML = renderArchetypeDetails(data);
+  }
+}
+
+function renderComponentDetails(comp, nodeId) {
+  const color = layerColor(comp.layer);
+  const archetypes = (comp.archetypes || []);
+  const archList = archetypes.map(a =>
+    `<li><span class="tag">${a.category}</span> ${a.symbol || a.id}${a.technology ? ' <span class="tag">' + a.technology + '</span>' : ''}</li>`
+  ).join('');
+
+  // Find flows through this component's archetypes
+  const archIds = new Set(archetypes.map(a => a.id));
+  const relatedFlows = (graphData.flows || []).filter(f =>
+    f.steps.some(s => archIds.has(s))
+  );
+  const flowList = relatedFlows.map(f =>
+    `<li><span class="flow-link" onclick="highlightFlow('${f.id}')">${f.name}</span></li>`
+  ).join('');
+
+  // Find upstream/downstream
+  const upstream = (graphData.component_edges || []).filter(e => e.to === comp.id);
+  const downstream = (graphData.component_edges || []).filter(e => e.from === comp.id);
+
+  const focusActive = neighborhoodFocusId === (nodeId || comp.id);
+  let html = `<h2>${comp.name}</h2>`;
+  html += `<button class="focus-btn${focusActive ? ' active' : ''}" onclick="focusNeighborhood('${nodeId || comp.id}')">${focusActive ? 'Show all' : 'Focus neighborhood'}</button>`;
+  html += `<div class="detail-section"><h3>Layer</h3><p><span class="layer-badge" style="background:${color}">${comp.layer}</span></p></div>`;
+  html += `<div class="detail-section"><h3>ID</h3><p>${comp.id}</p></div>`;
+
+  if (archetypes.length > 0) {
+    html += `<div class="detail-section"><h3>Archetypes (${archetypes.length})</h3><ul>${archList}</ul></div>`;
+  }
+
+  if (upstream.length > 0) {
+    const items = upstream.map(e => {
+      const c = (graphData.components || []).find(c => c.id === e.from);
+      return `<li>${c ? c.name : e.from} <span class="tag">${e.types.join(', ')}</span></li>`;
+    }).join('');
+    html += `<div class="detail-section"><h3>Upstream</h3><ul>${items}</ul></div>`;
+  }
+
+  if (downstream.length > 0) {
+    const items = downstream.map(e => {
+      const c = (graphData.components || []).find(c => c.id === e.to);
+      return `<li>${c ? c.name : e.to} <span class="tag">${e.types.join(', ')}</span></li>`;
+    }).join('');
+    html += `<div class="detail-section"><h3>Downstream</h3><ul>${items}</ul></div>`;
+  }
+
+  if (relatedFlows.length > 0) {
+    html += `<div class="detail-section"><h3>Flows</h3><ul>${flowList}</ul></div>`;
+  }
+
+  return html;
+}
+
+function renderArchetypeDetails(data) {
+  const arch = data.archetypeData;
+  const comp = (graphData.components || []).find(c => c.id === data.componentId);
+  const color = layerColor(comp ? comp.layer : '');
+
+  // Find relationships
+  const outgoing = (graphData.relationships || []).filter(r => r.from === arch.id);
+  const incoming = (graphData.relationships || []).filter(r => r.to === arch.id);
+
+  // Find flows
+  const relatedFlows = (graphData.flows || []).filter(f => f.steps.includes(arch.id));
+  const flowList = relatedFlows.map(f =>
+    `<li><span class="flow-link" onclick="highlightFlow('${f.id}')">${f.name}</span></li>`
+  ).join('');
+
+  const focusActive = neighborhoodFocusId === arch.id;
+  let html = `<h2>${arch.symbol || arch.id}</h2>`;
+  html += `<button class="focus-btn${focusActive ? ' active' : ''}" onclick="focusNeighborhood('${arch.id}')">${focusActive ? 'Show all' : 'Focus neighborhood'}</button>`;
+  html += `<div class="detail-section"><h3>Category</h3><p><span class="tag">${data.category}</span></p></div>`;
+
+  if (comp) {
+    html += `<div class="detail-section"><h3>Component</h3><p>${comp.name} <span class="layer-badge" style="background:${color}">${comp.layer}</span></p></div>`;
+  }
+
+  if (arch.technology) {
+    html += `<div class="detail-section"><h3>Technology</h3><p>${arch.technology}</p></div>`;
+  }
+
+  html += `<div class="detail-section"><h3>File</h3><p style="font-size:11px;word-break:break-all;">${arch.file}</p></div>`;
+
+  if (arch.purpose) {
+    html += `<div class="detail-section"><h3>Purpose</h3><p>${arch.purpose}</p></div>`;
+  }
+
+  if (outgoing.length > 0) {
+    const items = outgoing.map(r => `<li>${r.to} <span class="tag">${r.type}</span></li>`).join('');
+    html += `<div class="detail-section"><h3>Calls</h3><ul>${items}</ul></div>`;
+  }
+
+  if (incoming.length > 0) {
+    const items = incoming.map(r => `<li>${r.from} <span class="tag">${r.type}</span></li>`).join('');
+    html += `<div class="detail-section"><h3>Called By</h3><ul>${items}</ul></div>`;
+  }
+
+  if (relatedFlows.length > 0) {
+    html += `<div class="detail-section"><h3>Flows</h3><ul>${flowList}</ul></div>`;
+  }
+
+  return html;
+}
+
+function highlightFlow(flowId) {
+  document.getElementById('flow-select').value = flowId;
+  selectFlow(flowId);
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  clearSelection();
+}
+
+function clearSelection() {
+  if (cy) cy.elements().removeClass('selected-node');
+}
+
+// --- Editor live sync via SSE ---
+let editorSource = null;
+let editorFocusedId = null;
+
+function initEditorSync() {
+  editorSource = new EventSource('/cursor/stream');
+
+  editorSource.onopen = function() {
+    document.getElementById('editor-indicator').classList.add('connected');
+  };
+
+  editorSource.onmessage = function(e) {
+    const cursor = JSON.parse(e.data);
+    document.getElementById('editor-indicator').classList.add('connected');
+    focusEditorNode(cursor);
+  };
+
+  editorSource.onerror = function() {
+    document.getElementById('editor-indicator').classList.remove('connected');
+  };
+}
+
+function focusEditorNode(cursor) {
+  if (!cy) return;
+
+  cy.elements().removeClass('editor-focus');
+
+  // Prefer archetype (more specific), fall back to component
+  const id = cursor.archetype_id || cursor.component_id;
+  editorFocusedId = id || null;
+
+  if (!id) return;
+
+  // Auto-switch view if needed
+  let viewSwitched = false;
+  if (cursor.archetype_id && currentView === 'components') {
+    setView('archetypes');
+    viewSwitched = true;
+  } else if (!cursor.archetype_id && cursor.component_id && currentView === 'archetypes') {
+    setView('components');
+    viewSwitched = true;
+  }
+
+  function applyFocus() {
+    const node = cy.getElementById(id);
+    if (node.length) {
+      node.addClass('editor-focus');
+      // Also highlight parent compound in archetype view
+      if (node.data('type') === 'archetype') {
+        const parent = node.parent();
+        if (parent.length) parent.addClass('editor-focus');
+      }
+      // Fit entire graph in view, then pan to center on focused node
+      cy.fit(undefined, 40);
+      cy.animate({ center: { eles: node }, duration: 300 });
+      showDetails(node.data());
+    }
+  }
+
+  if (viewSwitched) {
+    // Wait for dagre layout to finish before centering
+    cy.one('layoutstop', applyFocus);
+  } else {
+    applyFocus();
+  }
+}
+
+initEditorSync();
+</script>
+</body>
+</html>

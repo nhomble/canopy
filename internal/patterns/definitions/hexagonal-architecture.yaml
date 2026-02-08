@@ -1,0 +1,88 @@
+name: "Hexagonal Architecture"
+aliases: ["Ports and Adapters", "Clean Architecture"]
+description: |
+  Architecture pattern that separates core business logic from external
+  concerns through ports (interfaces) and adapters (implementations).
+
+layers:
+  - id: "core"
+    description: "Business logic, domain entities, use cases"
+    characteristics:
+      - "No framework dependencies"
+      - "Pure business rules"
+      - "Framework-agnostic"
+    typical_files:
+      - "*/domain/**"
+      - "*/core/**"
+      - "*/entities/**"
+      - "*/usecases/**"
+
+  - id: "ports"
+    description: "Interfaces/contracts for external interactions"
+    characteristics:
+      - "Defines contracts"
+      - "No implementations"
+    typical_files:
+      - "*/ports/**"
+      - "*/*Port.*"
+      - "*/*Interface.*"
+      - "*/*UseCase.*"
+
+  - id: "adapters"
+    description: "Concrete implementations of ports"
+    characteristics:
+      - "Framework-specific code"
+      - "I/O operations"
+      - "External integrations"
+    typical_files:
+      - "*/adapters/**"
+      - "*/infrastructure/**"
+      - "*/application/**"
+      - "*Controller.*"
+      - "*Repository.*"
+      - "*Adapter.*"
+
+archetypes:
+  controller:
+    description: "Entry point adapter receiving external input"
+    typical_technologies: ["express", "fastify", "spring-mvc", "gin", "django"]
+    typical_files: ["*Controller.*", "*/controllers/**"]
+
+  repository:
+    description: "Data persistence adapter"
+    typical_technologies: ["typeorm", "prisma", "spring-data", "gorm"]
+    typical_files: ["*Repository.*", "*/repositories/**"]
+
+  service:
+    description: "Core use case / domain service implementation"
+    lives_in: "core"
+    typical_files: ["*Service.*", "*/services/**"]
+
+  port:
+    description: "Interface defining a boundary contract"
+    lives_in: "ports"
+    typical_files: ["*Port.*", "*UseCase.*"]
+
+  adapter:
+    description: "Implementation of a port for a specific technology"
+    lives_in: "adapters"
+    typical_files: ["*Adapter.*"]
+
+flow_patterns:
+  - "HTTP Request -> Controller (adapter) -> Use Case (core) -> Repository (adapter) -> Database"
+  - "Event -> Consumer (adapter) -> Use Case (core) -> Publisher (adapter) -> Event Bus"
+
+anti_patterns:
+  - "Core imports adapter code"
+  - "Adapter contains business logic"
+  - "Direct database access from core"
+
+questions:
+  - layer: "core"
+    prompts:
+      - "Does this have any framework dependencies?"
+      - "Is this pure business logic?"
+  - layer: "adapters"
+    prompts:
+      - "Am I translating between external and internal models?"
+      - "Is my I/O happening here?"
