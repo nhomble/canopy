@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
-	"github.com/nicolas/arch-index/internal/schema"
+	"github.com/nhomble/arch-index/internal/schema"
 )
 
 // FindComponent returns the component whose code_refs match the given file path.

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nicolas/arch-index/internal/schema"
+	"github.com/nhomble/arch-index/internal/schema"
 )
 
 // ArchiveIndex holds the parsed ArchIndex data with pre-built lookup maps

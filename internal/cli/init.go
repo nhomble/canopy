@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/nicolas/arch-index/internal/archdir"
+	"github.com/nhomble/arch-index/internal/archdir"
 	"github.com/spf13/cobra"
 )
 

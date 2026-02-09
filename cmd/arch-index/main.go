@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/nicolas/arch-index/internal/cli"
+	"github.com/nhomble/arch-index/internal/cli"
 )
 
 func main() {

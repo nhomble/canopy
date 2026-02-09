@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nicolas/arch-index/internal/archdir"
-	"github.com/nicolas/arch-index/internal/patterns"
-	"github.com/nicolas/arch-index/internal/prompt"
-	"github.com/nicolas/arch-index/internal/scanner"
+	"github.com/nhomble/arch-index/internal/archdir"
+	"github.com/nhomble/arch-index/internal/patterns"
+	"github.com/nhomble/arch-index/internal/prompt"
+	"github.com/nhomble/arch-index/internal/scanner"
 	"github.com/spf13/cobra"
 )
 

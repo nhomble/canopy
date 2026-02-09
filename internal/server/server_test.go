@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nicolas/arch-index/internal/schema"
+	"github.com/nhomble/arch-index/internal/schema"
 )
 
 func testIndex() *ArchiveIndex {

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nicolas/arch-index/internal/patterns"
+	"github.com/nhomble/arch-index/internal/patterns"
 )
 
 func TestRenderAnalysisPrompt(t *testing.T) {

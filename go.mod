@@ -1,4 +1,4 @@
-module github.com/nicolas/arch-index
+module github.com/nhomble/arch-index
 
 go 1.25.6
 

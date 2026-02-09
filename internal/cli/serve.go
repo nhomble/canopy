@@ -4,8 +4,8 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/nicolas/arch-index/internal/archdir"
-	"github.com/nicolas/arch-index/internal/server"
+	"github.com/nhomble/arch-index/internal/archdir"
+	"github.com/nhomble/arch-index/internal/server"
 	"github.com/spf13/cobra"
 )
 

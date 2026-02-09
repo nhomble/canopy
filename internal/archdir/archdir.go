@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/nicolas/arch-index/internal/schema"
+	"github.com/nhomble/arch-index/internal/schema"
 )
 
 const DefaultDirName = ".arch"
