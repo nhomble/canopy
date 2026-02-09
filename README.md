@@ -15,6 +15,27 @@ canopy prepare-analysis . | claude --print | canopy import --force
 canopy serve
 ```
 
+## Install
+
+```bash
+go install github.com/nhomble/canopy/cmd/canopy@latest
+```
+
+### Neovim (lazy.nvim)
+
+```lua
+{
+  "nhomble/canopy",
+  config = function()
+    require("canopy").setup({
+      binary = vim.fn.exepath("canopy"), -- or absolute path
+    })
+  end,
+}
+```
+
+Commands: `:CanopyStart`, `:CanopyStop`, `:CanopyRestart`, `:CanopyContext`, `:CanopyFlow`, `:CanopyOpen`
+
 ## Demo
 
 ![](./docs/demo.png)
