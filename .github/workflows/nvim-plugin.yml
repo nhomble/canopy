@@ -1,0 +1,33 @@
+name: Neovim Plugin
+
+on:
+  push:
+    branches: [main]
+    paths: ["plugin/canopy.nvim/**"]
+  pull_request:
+    branches: [main]
+    paths: ["plugin/canopy.nvim/**"]
+
+defaults:
+  run:
+    working-directory: plugin/canopy.nvim
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: luarocks/gh-actions-lua@v10
+      - uses: luarocks/gh-actions-luarocks@v5
+      - run: luarocks install luacheck
+      - run: make lint
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: JohnnyMorganz/stylua-action@v4
+        with:
+          token: ${{ github.token }}
+          version: latest
+      - run: make format-check
