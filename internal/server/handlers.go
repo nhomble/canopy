@@ -35,6 +35,7 @@ type FlowSummary struct {
 // SetupRoutes registers all HTTP handlers on the given mux.
 func SetupRoutes(mux *http.ServeMux, idx *ArchiveIndex, cs *CursorState) {
 	mux.HandleFunc("GET /{$}", handleUI())
+	mux.HandleFunc("GET /favicon.png", handleFavicon())
 	mux.HandleFunc("GET /health", handleHealth)
 	mux.HandleFunc("GET /graph", handleGraph(idx))
 	mux.HandleFunc("GET /context", handleContext(idx))
