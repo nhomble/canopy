@@ -94,6 +94,13 @@ var exampleOutput = `{
       "layer": "adapters",
       "code_refs": ["src/adapters/db/userRepository.ts"],
       "analyzed": true
+    },
+    {
+      "id": "admin-dashboard",
+      "name": "Admin Dashboard",
+      "layer": "app",
+      "code_refs": ["dashboard/**"],
+      "analyzed": true
     }
   ],
   "archetypes": {
@@ -127,7 +134,8 @@ var exampleOutput = `{
   },
   "relationships": [
     {"from": "user-controller", "to": "user-service", "type": "calls", "flow": "create-user"},
-    {"from": "user-service", "to": "user-repo", "type": "calls", "flow": "create-user"}
+    {"from": "user-service", "to": "user-repo", "type": "calls", "flow": "create-user"},
+    {"from": "admin-dashboard", "to": "user-api", "type": "calls"}
   ],
   "flows": [
     {

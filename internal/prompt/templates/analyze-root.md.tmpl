@@ -81,10 +81,21 @@ Below are the architectural patterns you should consider. Match the codebase str
 
 ## Your Task
 
-Analyze the codebase above and produce a JSON object conforming to the schema below. Specifically:
+Analyze the codebase above and produce a JSON object conforming to the schema below. Follow these steps **in order**:
 
+### Step 1: Identify application boundaries
+
+Before analyzing architecture, partition the codebase into distinct applications. Look for:
+- Code in a **different language** from the main codebase (e.g., Lua files in a Go repo, Python in a TypeScript repo)
+- Subtrees with their own entry points, dependency files, or build configs
+- Directories that are self-contained (e.g., `plugin/`, `clients/`, `dashboard/`)
+
+Each distinct application becomes its own component with `layer: "app"`. Its `code_refs` should cover only its subtree. Do NOT assign files from one application into another application's components. Do NOT create archetypes for standalone apps — they are components only.
+
+### Step 2: Identify patterns and components within each application
+
+For the **main application** (the one matching the primary language):
 1. **Patterns**: Identify which architectural patterns are present. Use the pattern names from the list above.
-
 2. **Components**: Identify the major logical components (services, modules, bounded contexts). For each:
    - Assign a short, unique `id` (lowercase, hyphenated).
    - Give it a human-readable `name`.
@@ -93,19 +104,28 @@ Analyze the codebase above and produce a JSON object conforming to the schema be
    - If it exposes interfaces, fill in `provides`.
    - Set `analyzed` to `true`.
 
-3. **Archetypes**: Classify individual code elements by their architectural role. Group them by archetype name (e.g., "controller", "repository", "service", "middleware"). For each instance:
-   - Assign a unique `id`.
-   - Set `file` to the source file path.
-   - Fill in `symbol`, `technology`, and other relevant fields.
+For **other applications** (from Step 1): they are already components with `layer: "app"`. Do not decompose them further.
 
-4. **Relationships**: Identify dependencies and interactions between components and archetypes:
-   - `from` and `to` reference component or archetype IDs.
-   - `type` should be one of: `depends-on`, `calls`, `implements`, `uses`, `produces`, `consumes`.
-   - Optionally link to a `flow`.
+### Step 3: Classify archetypes
 
-5. **Flows**: Identify the main request or data flows through the system:
-   - Each flow has an `id`, `name`, and ordered `steps` (referencing component/archetype IDs).
-   - Optionally reference the `pattern` it exemplifies.
+Classify individual code elements (within the main application only) by their architectural role. Group them by archetype name (e.g., "controller", "repository", "service", "middleware"). For each instance:
+- Assign a unique `id`.
+- Set `file` to the source file path.
+- Fill in `symbol`, `technology`, and other relevant fields.
+
+### Step 4: Map relationships
+
+Identify dependencies and interactions between components and archetypes:
+- `from` and `to` reference component or archetype IDs.
+- `type` should be one of: `depends-on`, `calls`, `implements`, `uses`, `produces`, `consumes`.
+- Optionally link to a `flow`.
+- Include **cross-app relationships** (e.g., a plugin calling the main app's HTTP API).
+
+### Step 5: Identify flows
+
+Identify the main request or data flows through the system:
+- Each flow has an `id`, `name`, and ordered `steps` (referencing component/archetype IDs).
+- Optionally reference the `pattern` it exemplifies.
 
 ## Output JSON Schema
 
