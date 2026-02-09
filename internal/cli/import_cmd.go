@@ -93,11 +93,11 @@ and trailing commas are automatically cleaned up.`,
 		for _, a := range idx.Archetypes {
 			archetypeCount += len(a)
 		}
-		fmt.Printf("Imported to %s\n", indexPath)
-		fmt.Printf("  Components:    %d\n", len(idx.Components))
-		fmt.Printf("  Archetypes:    %d\n", archetypeCount)
-		fmt.Printf("  Relationships: %d\n", len(idx.Relationships))
-		fmt.Printf("  Flows:         %d\n", len(idx.Flows))
+		fmt.Fprintf(os.Stderr, "Imported to %s\n", indexPath)
+		fmt.Fprintf(os.Stderr, "  Components:    %d\n", len(idx.Components))
+		fmt.Fprintf(os.Stderr, "  Archetypes:    %d\n", archetypeCount)
+		fmt.Fprintf(os.Stderr, "  Relationships: %d\n", len(idx.Relationships))
+		fmt.Fprintf(os.Stderr, "  Flows:         %d\n", len(idx.Flows))
 
 		return nil
 	},

@@ -23,9 +23,7 @@ var initCmd = &cobra.Command{
 
 		fmt.Printf("Initialized %s\n", ad.Root)
 		fmt.Println("\nNext steps:")
-		fmt.Println("  arch-index prepare-analysis .    Generate analysis prompt")
-		fmt.Println("  Feed the prompt to your LLM and save the JSON output")
-		fmt.Println("  arch-index import result.json    Import the analysis")
+		fmt.Println("  arch-index prepare-analysis . | <your-llm-cli> | arch-index import --force")
 		return nil
 	},
 }
