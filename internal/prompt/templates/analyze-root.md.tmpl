@@ -1,16 +1,12 @@
-You are a senior software architect with deep expertise in software design patterns, system architecture, and codebase analysis. Your task is to analyze the structure of a codebase and produce a precise architectural index as JSON.
+You are analyzing the structure of a codebase to produce an architectural index. You will be given a directory tree and file distribution. From these, you must infer the architecture, components, and relationships.
 
 ## Repository
 
 **Repo ID:** `{{.RepoID}}`
 
-## Codebase Statistics
-
-- **Total files:** {{.Stats.TotalFiles}}
-- **Total directories:** {{.Stats.TotalDirs}}
-- **File distribution:**
-{{- range $ext, $count := .Stats.FilesByExtension}}
-  - `{{$ext}}`: {{$count}} files
+## File Distribution
+{{range $ext, $count := .Stats.FilesByExtension}}
+- `{{$ext}}`: {{$count}} files
 {{- end}}
 
 ## Directory Tree
@@ -19,37 +15,7 @@ You are a senior software architect with deep expertise in software design patte
 {{.Tree}}
 ```
 
-## Detected Technology Stack
-
-| Source | Name | Type |
-|--------|------|------|
-{{- range .TechStack}}
-| {{.Source}} | {{.Name}} | {{.Type}} |
-{{- end}}
-
-## Code Signatures (sampled)
-
-The following are extracted signatures from sampled source files. Use these to identify architectural roles, patterns, and relationships.
-
-{{range .Signatures}}
-### `{{.RelPath}}`
-**Language:** {{.Language}}
-{{if .Imports}}
-**Imports:**
-{{range .Imports}}- `{{.Raw}}`{{if .Source}} (from `{{.Source}}`){{end}}
-{{end}}{{end}}
-{{if .Decorators}}**Decorators/Annotations:** {{range .Decorators}}`{{.}}` {{end}}
-{{end}}
-{{if .Signatures}}**Signatures:**
-{{range .Signatures}}- [{{.Kind}}] `{{.Name}}` (line {{.Line}}): `{{.Raw}}`
-{{end}}{{end}}
----
-{{end}}
-
-## Known Architectural Patterns
-
-Below are the architectural patterns you should consider. Match the codebase structure against these patterns.
-
+## Architectural Pattern Reference
 {{range .Patterns}}
 ### {{.Name}}
 
@@ -79,77 +45,72 @@ Below are the architectural patterns you should consider. Match the codebase str
 ---
 {{end}}
 
-## Your Task
+## Instructions
 
-Analyze the codebase above and produce a JSON object conforming to the schema below. Follow these steps **in order**:
+Analyze the directory tree above and produce a JSON architectural index. You must infer languages, frameworks, and architectural roles from directory names, file names, and extensions alone.
 
-### Step 1: Identify application boundaries
+Work through these steps in order:
 
-Before analyzing architecture, partition the codebase into distinct applications. Look for:
-- Code in a **different language** from the main codebase (e.g., Lua files in a Go repo, Python in a TypeScript repo)
-- Subtrees with their own entry points, dependency files, or build configs
-- Directories that are self-contained (e.g., `plugin/`, `clients/`, `dashboard/`)
+### Step 1: Partition into applications
 
-Each distinct application becomes its own component with `layer: "app"`. Its `code_refs` should cover only its subtree. Do NOT assign files from one application into another application's components. Do NOT create archetypes for standalone apps — they are components only.
+A repository may contain multiple distinct applications. Look for:
+- Subtrees in a **different language** (e.g., Lua files in a Go repo, a `dashboard/` with `.tsx` files)
+- Subtrees with their own build/dependency files (`package.json`, `go.mod`, `Cargo.toml`)
+- Self-contained directories (`plugin/`, `clients/`, `tools/`)
 
-### Step 2: Identify patterns and components within each application
+Each distinct application becomes a component with `layer: "app"`. Do NOT decompose it further — no archetypes, no sub-components. Its `code_refs` cover only its subtree.
 
-For the **main application** (the one matching the primary language):
-1. **Patterns**: Identify which architectural patterns are present. Use the pattern names from the list above.
-2. **Components**: Identify the major logical components (services, modules, bounded contexts). For each:
-   - Assign a short, unique `id` (lowercase, hyphenated).
-   - Give it a human-readable `name`.
-   - Assign it to an architectural `layer` from the detected pattern.
-   - List the `code_refs` (file paths or directory globs) that belong to it.
-   - If it exposes interfaces, fill in `provides`.
-   - Set `analyzed` to `true`.
+If the repository is a single application, skip this step.
 
-For **other applications** (from Step 1): they are already components with `layer: "app"`. Do not decompose them further.
+### Step 2: Detect architectural patterns
 
-### Step 3: Classify archetypes
+For the **main application** only, identify which architectural patterns from the reference above are present. Evidence comes from directory structure and naming conventions (e.g., `domain/`, `adapters/`, `controllers/`, `models/`).
 
-Classify individual code elements (within the main application only) by their architectural role. Group them by archetype name (e.g., "controller", "repository", "service", "middleware"). For each instance:
-- Assign a unique `id`.
-- Set `file` to the source file path.
-- Fill in `symbol`, `technology`, and other relevant fields.
+Only include patterns you have strong evidence for.
 
-### Step 4: Map relationships
+### Step 3: Identify components
 
-Identify dependencies and interactions between components and archetypes:
-- `from` and `to` reference component or archetype IDs.
-- `type` should be one of: `depends-on`, `calls`, `implements`, `uses`, `produces`, `consumes`.
-- Optionally link to a `flow`.
-- Include **cross-app relationships** (e.g., a plugin calling the main app's HTTP API).
+Decompose the main application into logical components (services, modules, bounded contexts):
+- Assign each a unique `id` (lowercase, hyphenated), a human-readable `name`, and a `layer` from the detected pattern.
+- `code_refs` should use file paths or directory globs from the tree.
+- Every source file in the main application should belong to exactly one component.
 
-### Step 5: Identify flows
+### Step 4: Classify archetypes
 
-Identify the main request or data flows through the system:
-- Each flow has an `id`, `name`, and ordered `steps` (referencing component/archetype IDs).
-- Optionally reference the `pattern` it exemplifies.
+Within the main application, classify individual files by their architectural role. Group by archetype name (`controller`, `repository`, `service`, etc.). For each:
+- `id`: unique across the entire output
+- `file`: exact path from the tree
+- `symbol`: primary class/function name (infer from file name)
+- `technology`: infer from file extensions, directory names, or common conventions
 
-## Output JSON Schema
+**Do NOT create archetypes for `app`-layer components.** Archetypes are only for the main application.
 
-Your output MUST conform exactly to this schema:
+### Step 5: Map relationships
+
+Identify dependencies between components and archetypes:
+- `type`: one of `depends-on`, `calls`, `implements`, `uses`, `produces`, `consumes`
+- Include cross-application relationships where evident (e.g., a plugin calling the main app's API)
+
+### Step 6: Identify flows
+
+Trace the main request/data flows through the system. Each flow is an ordered list of component/archetype IDs representing how a request or event moves through the architecture.
+
+## Output Schema
 
 ```json
 {{.OutputSchema}}
 ```
 
-## Example Output
-
-Here is a small, valid example to illustrate the expected format:
+## Example
 
 ```json
 {{.ExampleOutput}}
 ```
 
-## Rules
+## Output Rules
 
-- Output ONLY valid JSON. No markdown fences. No commentary. No explanation.
-- Every `id` must be unique across the entire output.
-- Every `from` and `to` in relationships must reference an existing component or archetype `id`.
-- Every step in a flow must reference an existing component or archetype `id`.
-- Use the actual file paths from the codebase. Do not invent paths.
-- If you are uncertain about a classification, make your best judgment but still include it.
-- Prefer specificity: if a file clearly matches an archetype, classify it; do not leave it unclassified.
-- The `patterns` array should only contain patterns you have strong evidence for.
+- Output ONLY valid JSON. No markdown fences, no commentary.
+- Every `id` must be unique across the entire output (components, archetypes, flows).
+- Every `from`/`to` in relationships and every step in flows must reference an existing `id`.
+- Use actual file paths from the tree. Do not invent paths.
+- `repo_id` must be `{{.RepoID}}`.

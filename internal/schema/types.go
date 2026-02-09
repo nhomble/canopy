@@ -69,7 +69,6 @@ type Config struct {
 	RepoID          string   `json:"repo_id"`
 	IgnorePatterns  []string `json:"ignore_patterns"`
 	MaxFileSizeBytes int64   `json:"max_file_size_bytes"`
-	SampleFileCount int      `json:"sample_file_count"`
 }
 
 // DefaultConfig returns sensible defaults for a new project.
@@ -82,6 +81,5 @@ func DefaultConfig(repoID string) Config {
 			"__pycache__", ".venv", "target", ".idea", ".vscode",
 		},
 		MaxFileSizeBytes: 1 << 20, // 1MB
-		SampleFileCount:  5,
 	}
 }

@@ -8,7 +8,6 @@ import (
 )
 
 func TestRenderAnalysisPrompt(t *testing.T) {
-	// Load real pattern definitions.
 	pats, err := patterns.LoadAll()
 	if err != nil {
 		t.Fatalf("patterns.LoadAll() failed: %v", err)
@@ -34,38 +33,6 @@ func TestRenderAnalysisPrompt(t *testing.T) {
 				".json": 2,
 			},
 		},
-		TechStack: []TechHint{
-			{Source: "package.json", Name: "express", Type: "framework"},
-			{Source: "tsconfig.json", Name: "typescript", Type: "language"},
-		},
-		Signatures: []FileSignatures{
-			{
-				Path:     "/workspace/test-repo/src/controllers/userController.ts",
-				RelPath:  "src/controllers/userController.ts",
-				Language: "TypeScript",
-				Imports: []ImportStatement{
-					{Raw: "import { Router } from 'express'", Source: "express"},
-					{Raw: "import { UserService } from '../services/userService'", Source: "../services/userService"},
-				},
-				Signatures: []Signature{
-					{Kind: "class", Name: "UserController", Line: 5, Raw: "export class UserController"},
-					{Kind: "method", Name: "getUsers", Line: 10, Raw: "async getUsers(req: Request, res: Response)"},
-				},
-				Decorators: []string{"@Controller('/users')"},
-			},
-			{
-				Path:     "/workspace/test-repo/src/services/userService.ts",
-				RelPath:  "src/services/userService.ts",
-				Language: "TypeScript",
-				Imports: []ImportStatement{
-					{Raw: "import { User } from '../models/user'", Source: "../models/user"},
-				},
-				Signatures: []Signature{
-					{Kind: "class", Name: "UserService", Line: 3, Raw: "export class UserService"},
-					{Kind: "method", Name: "findAll", Line: 8, Raw: "async findAll(): Promise<User[]>"},
-				},
-			},
-		},
 		Patterns: pats,
 	}
 
@@ -74,21 +41,13 @@ func TestRenderAnalysisPrompt(t *testing.T) {
 		t.Fatalf("RenderAnalysisPrompt() returned error: %v", err)
 	}
 
-	// Verify key sections are present.
 	checks := []struct {
-		name    string
-		substr  string
+		name   string
+		substr string
 	}{
-		{"role", "senior software architect"},
+		{"role", "analyzing the structure of a codebase"},
 		{"repo id", "test-repo"},
 		{"tree section", "controllers/"},
-		{"tech stack express", "express"},
-		{"tech stack typescript", "typescript"},
-		{"file signature path", "src/controllers/userController.ts"},
-		{"import statement", "import { Router } from 'express'"},
-		{"signature name", "UserController"},
-		{"signature kind", "[class]"},
-		{"decorator", "@Controller('/users')"},
 		{"pattern name hex", "Hexagonal Architecture"},
 		{"pattern name mvc", "Model-View-Controller"},
 		{"layer core", "core"},
@@ -96,12 +55,13 @@ func TestRenderAnalysisPrompt(t *testing.T) {
 		{"json schema", "$schema"},
 		{"example output", "my-app"},
 		{"output rules", "Output ONLY valid JSON"},
-		{"stats total files", "5"},
 		{"stats extension", ".ts"},
 		{"archetype controller", "controller"},
 		{"archetype repository", "repository"},
 		{"flow patterns", "HTTP Request"},
 		{"anti patterns", "business logic"},
+		{"step 1", "Partition into applications"},
+		{"step 4 constraint", "Do NOT create archetypes"},
 	}
 
 	for _, c := range checks {
@@ -112,7 +72,6 @@ func TestRenderAnalysisPrompt(t *testing.T) {
 		})
 	}
 
-	// Verify it is reasonably long (a good prompt should be substantial).
 	if len(result) < 1000 {
 		t.Errorf("prompt seems too short: %d bytes", len(result))
 	}
@@ -128,7 +87,6 @@ func TestLoadSchema(t *testing.T) {
 		t.Fatal("schema should not be empty")
 	}
 
-	// Verify it contains key schema elements.
 	checks := []string{
 		"repo_id",
 		"components",
@@ -147,7 +105,6 @@ func TestLoadSchema(t *testing.T) {
 }
 
 func TestRenderAnalysisPromptMinimalData(t *testing.T) {
-	// Test with minimal data to ensure template does not panic.
 	data := PromptData{
 		RepoID: "minimal-repo",
 		Tree:   "minimal-repo/\n└── main.go",

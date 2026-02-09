@@ -15,13 +15,6 @@ var templateFS embed.FS
 //go:embed schemas/*.json
 var schemaFS embed.FS
 
-// TechHint describes a technology detected in the codebase.
-type TechHint struct {
-	Source string // where the hint was found (e.g., "package.json", "go.mod")
-	Name   string // technology name (e.g., "express", "gin")
-	Type   string // category (e.g., "framework", "library", "language")
-}
-
 // ScanStats holds high-level statistics from a codebase scan.
 type ScanStats struct {
 	TotalFiles       int
@@ -29,37 +22,11 @@ type ScanStats struct {
 	FilesByExtension map[string]int
 }
 
-// ImportStatement represents a single import/require/use statement.
-type ImportStatement struct {
-	Raw    string // full import text
-	Source string // resolved module or package name
-}
-
-// Signature represents a top-level code symbol (function, class, type, etc.).
-type Signature struct {
-	Kind string // "function", "class", "type", "interface", "method", etc.
-	Name string // symbol name
-	Line int    // line number in file
-	Raw  string // raw source text of the declaration
-}
-
-// FileSignatures holds extracted signatures for a single source file.
-type FileSignatures struct {
-	Path       string             // absolute path
-	RelPath    string             // path relative to repo root
-	Language   string             // detected language
-	Imports    []ImportStatement
-	Signatures []Signature
-	Decorators []string
-}
-
 // PromptData is the complete data bag passed to the analysis prompt template.
 type PromptData struct {
 	RepoID        string
 	Tree          string
 	Stats         ScanStats
-	TechStack     []TechHint
-	Signatures    []FileSignatures
 	Patterns      []patterns.PatternDef
 	OutputSchema  string
 	ExampleOutput string
@@ -148,10 +115,7 @@ var exampleOutput = `{
 }`
 
 // RenderAnalysisPrompt renders the root analysis prompt with the given data.
-// It loads the embedded template, injects the JSON schema and example output,
-// and returns the fully rendered prompt string.
 func RenderAnalysisPrompt(data PromptData) (string, error) {
-	// Load schema if not already set.
 	if data.OutputSchema == "" {
 		s, err := LoadSchema()
 		if err != nil {
@@ -160,7 +124,6 @@ func RenderAnalysisPrompt(data PromptData) (string, error) {
 		data.OutputSchema = s
 	}
 
-	// Set example output if not already set.
 	if data.ExampleOutput == "" {
 		data.ExampleOutput = exampleOutput
 	}
