@@ -1,4 +1,5 @@
 local client = require("arch-index.client")
+local port_mod = require("arch-index.port")
 
 local M = {}
 
@@ -12,7 +13,7 @@ local archetype_files = nil
 --- looking for a .arch/ directory.
 --- @param bufnr number
 --- @return string|nil root Absolute path to project root
-local function find_project_root(bufnr)
+function M.find_project_root(bufnr)
   local bufpath = vim.api.nvim_buf_get_name(bufnr)
   if bufpath == "" then
     return nil
@@ -31,6 +32,23 @@ local function find_project_root(bufnr)
   return nil
 end
 
+--- Compute the base URL for the arch-index server for this buffer's project.
+--- @param bufnr number
+--- @param override string|nil If set, return this URL instead of computing
+--- @return string|nil base_url
+function M.base_url_for(bufnr, override)
+  if override and override ~= "" then
+    return override
+  end
+  local root = M.find_project_root(bufnr)
+  if not root then
+    return nil
+  end
+  root = root:gsub("/$", "")
+  local p = port_mod.for_root(root)
+  return "http://127.0.0.1:" .. p
+end
+
 --- Compute the relative path the server expects (forward slashes, no leading ./ or /).
 --- @param bufnr number
 --- @return string|nil relpath
@@ -40,7 +58,7 @@ function M.relative_path(bufnr)
     return nil
   end
 
-  local root = find_project_root(bufnr)
+  local root = M.find_project_root(bufnr)
   if not root then
     return nil
   end

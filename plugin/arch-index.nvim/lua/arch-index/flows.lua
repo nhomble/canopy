@@ -7,22 +7,7 @@ local M = {}
 --- Find the project root for the current buffer (for resolving relative paths).
 --- @return string|nil
 local function project_root()
-  local bufpath = vim.api.nvim_buf_get_name(0)
-  if bufpath == "" then
-    return nil
-  end
-  local dir = vim.fn.fnamemodify(bufpath, ":h")
-  while dir and dir ~= "/" do
-    if vim.fn.isdirectory(dir .. "/.arch") == 1 then
-      return dir
-    end
-    local parent = vim.fn.fnamemodify(dir, ":h")
-    if parent == dir then
-      break
-    end
-    dir = parent
-  end
-  return nil
+  return cache.find_project_root(0)
 end
 
 --- Show flows through the current file, then let user pick one to see steps.
