@@ -1,4 +1,4 @@
-You are analyzing the structure of a codebase to produce an architectural index. You will be given a directory tree and file distribution. From these, you must infer the architecture, components, and relationships.
+You are analyzing the structure of a codebase to produce an architectural index. You will be given a directory tree and file distribution. From these, infer the architecture, components, and relationships using directory names, file names, and extensions.
 
 ## Repository
 
@@ -47,53 +47,65 @@ You are analyzing the structure of a codebase to produce an architectural index.
 
 ## Instructions
 
-Analyze the directory tree above and produce a JSON architectural index. You must infer languages, frameworks, and architectural roles from directory names, file names, and extensions alone.
+Work through these steps in order.
 
-Work through these steps in order:
+### Step 1: Identify project boundaries
 
-### Step 1: Partition into applications
-
-A repository may contain multiple distinct applications. Look for:
-- Subtrees in a **different language** (e.g., Lua files in a Go repo, a `dashboard/` with `.tsx` files)
-- Subtrees with their own build/dependency files (`package.json`, `go.mod`, `Cargo.toml`)
+Partition the repository into distinct projects. Evidence:
+- Subtrees in a **different language** (e.g., Lua in a Go repo, TypeScript in a Java repo)
+- Subtrees with their own build/dependency files (`package.json`, `go.mod`, `pom.xml`, `build.gradle`)
 - Self-contained directories (`plugin/`, `clients/`, `tools/`)
 
-Each distinct application becomes a component with `layer: "app"`. Do NOT decompose it further — no archetypes, no sub-components. Its `code_refs` cover only its subtree.
+Each distinct project becomes a component with `layer: "app"`. Do NOT decompose it further — no archetypes, no sub-components. Its `code_refs` cover only its subtree.
 
-If the repository is a single application, skip this step.
+**Not separate projects:** test directories, sample/example directories, documentation, build configuration. These belong to the project they support.
+
+If the repository is a single project, skip this step.
 
 ### Step 2: Detect architectural patterns
 
-For the **main application** only, identify which architectural patterns from the reference above are present. Evidence comes from directory structure and naming conventions (e.g., `domain/`, `adapters/`, `controllers/`, `models/`).
+For the **main project**, identify architectural patterns. Use the reference patterns above where they fit, but also identify other patterns evident from the structure (e.g., Filter Chain, Provider/Strategy, Plugin Architecture, Event-Driven, Layered/N-Tier).
 
-Only include patterns you have strong evidence for.
+Include a pattern only when there is clear structural evidence — directory naming, file conventions, or layering in the tree.
 
 ### Step 3: Identify components
 
-Decompose the main application into logical components (services, modules, bounded contexts):
-- Assign each a unique `id` (lowercase, hyphenated), a human-readable `name`, and a `layer` from the detected pattern.
-- `code_refs` should use file paths or directory globs from the tree.
-- Every source file in the main application should belong to exactly one component.
+Decompose the main project into components that represent **cohesive subsystems**, not just individual directories.
+
+Guidance on granularity:
+- **Group tightly coupled directories** into one component when they form a single subsystem (e.g., a template engine + its schema definitions = one component).
+- **Decompose large subsystems** that have their own internal layering. If a directory contains distinct layers (entry points, business logic, data access), it should be multiple components, not one.
+- Components should map to things a developer would describe as "the X subsystem" — not every package, but not the whole app either.
+
+For each component:
+- `id`: unique, lowercase, hyphenated
+- `name`: human-readable
+- `layer`: from the detected pattern (or a descriptive layer name if using a non-reference pattern)
+- `code_refs`: file paths or directory globs from the tree
+- Set `analyzed` to `true`
+
+Every source file in the main project should belong to exactly one component.
 
 ### Step 4: Classify archetypes
 
-Within the main application, classify individual files by their architectural role. Group by archetype name (`controller`, `repository`, `service`, etc.). For each:
+Within the main project, classify individual files by their architectural role. Group by archetype name (`controller`, `repository`, `service`, `filter`, `provider`, `configurer`, etc.). For each:
 - `id`: unique across the entire output
 - `file`: exact path from the tree
 - `symbol`: primary class/function name (infer from file name)
-- `technology`: infer from file extensions, directory names, or common conventions
+- `technology`: infer from extensions, directory names, or conventions
 
-**Do NOT create archetypes for `app`-layer components.** Archetypes are only for the main application.
+**Do NOT create archetypes for `app`-layer components.** Archetypes apply only to the main project.
 
 ### Step 5: Map relationships
 
 Identify dependencies between components and archetypes:
 - `type`: one of `depends-on`, `calls`, `implements`, `uses`, `produces`, `consumes`
-- Include cross-application relationships where evident (e.g., a plugin calling the main app's API)
+- Include cross-project relationships where evident (e.g., a plugin calling the main project's API)
+- Relationships should reflect the dependency direction: entry points depend on services, services depend on repositories.
 
 ### Step 6: Identify flows
 
-Trace the main request/data flows through the system. Each flow is an ordered list of component/archetype IDs representing how a request or event moves through the architecture.
+Trace the main request/data flows. Start from entry points (CLI commands, HTTP endpoints, event handlers) and follow the path through the system. Each flow is an ordered list of component/archetype IDs.
 
 ## Output Schema
 
