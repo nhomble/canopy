@@ -28,8 +28,14 @@ function M.is_running(root)
   root = root:gsub("/$", "")
   local p = M.port_for(root)
   local output = vim.fn.system({
-    "curl", "-s", "-o", "/dev/null", "-w", "%{http_code}",
-    "--max-time", "1",
+    "curl",
+    "-s",
+    "-o",
+    "/dev/null",
+    "-w",
+    "%{http_code}",
+    "--max-time",
+    "1",
     "http://127.0.0.1:" .. p .. "/health",
   })
   return vim.v.shell_error == 0 and vim.trim(output) == "200"
@@ -53,11 +59,15 @@ function M.start(root)
     return false
   end
 
-  local job_id = vim.fn.jobstart({
-    binary, "serve", "--port", tostring(p),
+  local job_id
+  job_id = vim.fn.jobstart({
+    binary,
+    "serve",
+    "--port",
+    tostring(p),
   }, {
     cwd = root,
-    on_exit = function(_, code)
+    on_exit = function()
       local state = servers[root]
       if state and state.job_id == job_id then
         servers[root] = nil
@@ -89,7 +99,12 @@ function M.stop(root)
   -- No tracked job, but server might be running externally — try kill via port
   local p = M.port_for(root)
   vim.fn.system({
-    "curl", "-s", "--max-time", "1", "-X", "PUT",
+    "curl",
+    "-s",
+    "--max-time",
+    "1",
+    "-X",
+    "PUT",
     "http://127.0.0.1:" .. p .. "/shutdown",
   })
 end

@@ -89,7 +89,7 @@ function M.get(bufnr, base_url)
 
   -- Fetch from server
   local url = base_url .. "/context?file=" .. vim.uri_encode(rel, "rfc2396")
-  local data, err = client.get(url)
+  local data = client.get(url)
   if not data then
     return nil
   end
@@ -116,7 +116,7 @@ function M.get_archetype_files(base_url)
     return archetype_files
   end
 
-  local data, err = client.get(base_url .. "/graph")
+  local data = client.get(base_url .. "/graph")
   if not data or not data.components then
     return {}
   end

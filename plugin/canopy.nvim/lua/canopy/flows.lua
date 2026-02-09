@@ -38,7 +38,7 @@ function M.for_current_file(base_url)
   local seen = {}
   local flows = {}
   for _, id in ipairs(through_ids) do
-    local data, err = client.get(base_url .. "/flows?through=" .. vim.uri_encode(id, "rfc2396"))
+    local data = client.get(base_url .. "/flows?through=" .. vim.uri_encode(id, "rfc2396"))
     if data and data.flows then
       for _, flow in ipairs(data.flows) do
         if not seen[flow.id] then

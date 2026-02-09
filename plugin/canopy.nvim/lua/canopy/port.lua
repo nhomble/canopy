@@ -14,8 +14,12 @@ local PORT_RANGE = 50000
 --- @return number 32-bit result (signed, as returned by bit.band)
 local function mul32(a, b)
   -- Ensure unsigned 32-bit inputs
-  if a < 0 then a = a + 4294967296 end
-  if b < 0 then b = b + 4294967296 end
+  if a < 0 then
+    a = a + 4294967296
+  end
+  if b < 0 then
+    b = b + 4294967296
+  end
   local a_lo = a % 65536
   local a_hi = (a - a_lo) / 65536
   local b_lo = b % 65536
