@@ -1,4 +1,4 @@
-package archdir
+package canopydir
 
 import (
 	"encoding/json"
@@ -6,19 +6,19 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/nhomble/arch-index/internal/schema"
+	"github.com/nhomble/canopy/internal/schema"
 )
 
-const DefaultDirName = ".arch"
+const DefaultDirName = ".canopy"
 
-// ArchDir manages the .arch/ directory for a project.
-type ArchDir struct {
-	Root string // Absolute path to the .arch/ directory
+// CanopyDir manages the .canopy/ directory for a project.
+type CanopyDir struct {
+	Root string // Absolute path to the .canopy/ directory
 }
 
-// Find walks up from startDir looking for a .arch/ directory,
+// Find walks up from startDir looking for a .canopy/ directory,
 // similar to how git finds .git/.
-func Find(startDir string) (*ArchDir, error) {
+func Find(startDir string) (*CanopyDir, error) {
 	dir, err := filepath.Abs(startDir)
 	if err != nil {
 		return nil, fmt.Errorf("resolving path: %w", err)
@@ -28,7 +28,7 @@ func Find(startDir string) (*ArchDir, error) {
 		candidate := filepath.Join(dir, DefaultDirName)
 		info, err := os.Stat(candidate)
 		if err == nil && info.IsDir() {
-			return &ArchDir{Root: candidate}, nil
+			return &CanopyDir{Root: candidate}, nil
 		}
 
 		parent := filepath.Dir(dir)
@@ -38,11 +38,11 @@ func Find(startDir string) (*ArchDir, error) {
 		dir = parent
 	}
 
-	return nil, fmt.Errorf("no %s directory found (run 'arch-index init' first)", DefaultDirName)
+	return nil, fmt.Errorf("no %s directory found (run 'canopy init' first)", DefaultDirName)
 }
 
-// Init creates a new .arch/ directory structure inside parentDir.
-func Init(parentDir string) (*ArchDir, error) {
+// Init creates a new .canopy/ directory structure inside parentDir.
+func Init(parentDir string) (*CanopyDir, error) {
 	absParent, err := filepath.Abs(parentDir)
 	if err != nil {
 		return nil, fmt.Errorf("resolving path: %w", err)
@@ -72,7 +72,7 @@ func Init(parentDir string) (*ArchDir, error) {
 	cfg := schema.DefaultConfig(repoID)
 
 	// Write config.json
-	ad := &ArchDir{Root: root}
+	ad := &CanopyDir{Root: root}
 	cfgData, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("marshaling config: %w", err)
@@ -86,24 +86,24 @@ func Init(parentDir string) (*ArchDir, error) {
 
 // Path helpers
 
-func (a *ArchDir) ConfigPath() string {
+func (a *CanopyDir) ConfigPath() string {
 	return filepath.Join(a.Root, "config.json")
 }
 
-func (a *ArchDir) IndexPath() string {
+func (a *CanopyDir) IndexPath() string {
 	return filepath.Join(a.Root, "index.json")
 }
 
-func (a *ArchDir) PromptPath(name string) string {
+func (a *CanopyDir) PromptPath(name string) string {
 	return filepath.Join(a.Root, "prompts", name)
 }
 
-func (a *ArchDir) ComponentPath(id string) string {
+func (a *CanopyDir) ComponentPath(id string) string {
 	return filepath.Join(a.Root, "components", id+".json")
 }
 
 // LoadConfig reads and parses the config.json file.
-func (a *ArchDir) LoadConfig() (*schema.Config, error) {
+func (a *CanopyDir) LoadConfig() (*schema.Config, error) {
 	data, err := os.ReadFile(a.ConfigPath())
 	if err != nil {
 		return nil, fmt.Errorf("reading config: %w", err)

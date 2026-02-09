@@ -3,12 +3,12 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-BINARY="$PROJECT_DIR/arch-index"
+BINARY="$PROJECT_DIR/canopy"
 GOLDEN="$PROJECT_DIR/testdata/golden/index.json"
 TMPDIR=$(mktemp -d)
 trap "rm -rf $TMPDIR" EXIT
 
-echo "=== arch-index E2E test ==="
+echo "=== canopy E2E test ==="
 echo "Using temp dir: $TMPDIR"
 
 # Build
@@ -19,15 +19,15 @@ echo "1. Building..."
 echo "2. Testing init..."
 cd "$TMPDIR"
 $BINARY init
-[ -f .arch/config.json ] || { echo "FAIL: config.json not created"; exit 1; }
-[ -d .arch/components ] || { echo "FAIL: components/ not created"; exit 1; }
-[ -d .arch/prompts ] || { echo "FAIL: prompts/ not created"; exit 1; }
-echo "   PASS: init created .arch/ structure"
+[ -f .canopy/config.json ] || { echo "FAIL: config.json not created"; exit 1; }
+[ -d .canopy/components ] || { echo "FAIL: components/ not created"; exit 1; }
+[ -d .canopy/prompts ] || { echo "FAIL: prompts/ not created"; exit 1; }
+echo "   PASS: init created .canopy/ structure"
 
 # Import golden fixture
 echo "3. Testing import..."
 $BINARY import --force "$GOLDEN"
-[ -f .arch/index.json ] || { echo "FAIL: index.json not created"; exit 1; }
+[ -f .canopy/index.json ] || { echo "FAIL: index.json not created"; exit 1; }
 echo "   PASS: imported golden fixture"
 
 # Validate

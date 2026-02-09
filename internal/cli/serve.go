@@ -4,8 +4,8 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/nhomble/arch-index/internal/archdir"
-	"github.com/nhomble/arch-index/internal/server"
+	"github.com/nhomble/canopy/internal/canopydir"
+	"github.com/nhomble/canopy/internal/server"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +18,7 @@ var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Start the local HTTP server for architectural queries",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ad, err := archdir.Find(".")
+		ad, err := canopydir.Find(".")
 		if err != nil {
 			return err
 		}

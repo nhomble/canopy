@@ -1,5 +1,5 @@
-local client = require("arch-index.client")
-local port_mod = require("arch-index.port")
+local client = require("canopy.client")
+local port_mod = require("canopy.port")
 
 local M = {}
 
@@ -10,7 +10,7 @@ local buf_cache = {}
 local archetype_files = nil
 
 --- Detect the project root by walking up from the buffer's directory
---- looking for a .arch/ directory.
+--- looking for a .canopy/ directory.
 --- @param bufnr number
 --- @return string|nil root Absolute path to project root
 function M.find_project_root(bufnr)
@@ -20,7 +20,7 @@ function M.find_project_root(bufnr)
   end
   local dir = vim.fn.fnamemodify(bufpath, ":h")
   while dir and dir ~= "/" do
-    if vim.fn.isdirectory(dir .. "/.arch") == 1 then
+    if vim.fn.isdirectory(dir .. "/.canopy") == 1 then
       return dir
     end
     local parent = vim.fn.fnamemodify(dir, ":h")
@@ -32,7 +32,7 @@ function M.find_project_root(bufnr)
   return nil
 end
 
---- Compute the base URL for the arch-index server for this buffer's project.
+--- Compute the base URL for the canopy server for this buffer's project.
 --- @param bufnr number
 --- @param override string|nil If set, return this URL instead of computing
 --- @return string|nil base_url

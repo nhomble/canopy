@@ -1,6 +1,6 @@
 package schema
 
-// ArchIndex is the root data structure stored in .arch/index.json.
+// ArchIndex is the root data structure stored in .canopy/index.json.
 // It represents the full architectural analysis of a codebase.
 type ArchIndex struct {
 	RepoID        string                `json:"repo_id"`
@@ -63,7 +63,7 @@ type Flow struct {
 	Pattern string   `json:"pattern,omitempty"`
 }
 
-// Config represents the user configuration stored in .arch/config.json.
+// Config represents the user configuration stored in .canopy/config.json.
 type Config struct {
 	Version         string   `json:"version"`
 	RepoID          string   `json:"repo_id"`

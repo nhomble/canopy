@@ -6,8 +6,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/nhomble/arch-index/internal/archdir"
-	"github.com/nhomble/arch-index/internal/schema"
+	"github.com/nhomble/canopy/internal/canopydir"
+	"github.com/nhomble/canopy/internal/schema"
 	"github.com/spf13/cobra"
 )
 
@@ -15,9 +15,9 @@ var importForce bool
 
 var importCmd = &cobra.Command{
 	Use:   "import [file]",
-	Short: "Validate and import LLM analysis output into .arch/index.json",
+	Short: "Validate and import LLM analysis output into .canopy/index.json",
 	Long: `Import reads JSON output from an LLM analysis, validates it against
-the expected schema, and saves it to .arch/index.json.
+the expected schema, and saves it to .canopy/index.json.
 
 The input can be a file path or piped via stdin. The tool handles
 messy LLM output: markdown code fences, surrounding commentary,
@@ -69,8 +69,8 @@ and trailing commas are automatically cleaned up.`,
 			}
 		}
 
-		// Find .arch directory
-		ad, err := archdir.Find(".")
+		// Find .canopy directory
+		ad, err := canopydir.Find(".")
 		if err != nil {
 			return err
 		}

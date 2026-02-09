@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nhomble/arch-index/internal/schema"
+	"github.com/nhomble/canopy/internal/schema"
 )
 
 // ArchiveIndex holds the parsed ArchIndex data with pre-built lookup maps

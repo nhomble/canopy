@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nhomble/arch-index/internal/patterns"
+	"github.com/nhomble/canopy/internal/patterns"
 )
 
 func TestRenderAnalysisPrompt(t *testing.T) {

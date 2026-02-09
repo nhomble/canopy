@@ -134,7 +134,7 @@ function M.show_flow_steps(flow, archetype_files, project_root)
     on_cr = function(line_nr)
       local file = step_files[line_nr]
       if not file then
-        vim.notify("arch-index: no file for this step", vim.log.levels.WARN)
+        vim.notify("canopy: no file for this step", vim.log.levels.WARN)
         return
       end
       -- Resolve to absolute path if we have a project root

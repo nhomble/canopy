@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"text/template"
 
-	"github.com/nhomble/arch-index/internal/patterns"
+	"github.com/nhomble/canopy/internal/patterns"
 )
 
 //go:embed templates/*.md.tmpl

@@ -1,0 +1,4 @@
+-- This file intentionally left minimal.
+-- Setup is handled by the plugin manager (lazy.nvim) calling require('canopy').setup().
+-- For manual installation without a plugin manager, add to your init.lua:
+--   require('canopy').setup()

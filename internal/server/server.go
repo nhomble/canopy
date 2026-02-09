@@ -44,7 +44,7 @@ func Run(indexPath string, host string, port int) error {
 		archetypeCount += len(a)
 	}
 
-	log.Printf("arch-index server listening on http://%s (open in browser for graph UI)", addr)
+	log.Printf("canopy server listening on http://%s (open in browser for graph UI)", addr)
 	log.Printf("Loaded: %d components, %d archetypes, %d relationships, %d flows",
 		len(idx.Raw.Components), archetypeCount,
 		len(idx.Raw.Relationships), len(idx.Raw.Flows))

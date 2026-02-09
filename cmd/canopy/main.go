@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/nhomble/arch-index/internal/cli"
+	"github.com/nhomble/canopy/internal/cli"
 )
 
 func main() {

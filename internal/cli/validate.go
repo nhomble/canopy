@@ -3,16 +3,16 @@ package cli
 import (
 	"fmt"
 
-	"github.com/nhomble/arch-index/internal/archdir"
-	"github.com/nhomble/arch-index/internal/schema"
+	"github.com/nhomble/canopy/internal/canopydir"
+	"github.com/nhomble/canopy/internal/schema"
 	"github.com/spf13/cobra"
 )
 
 var validateCmd = &cobra.Command{
 	Use:   "validate",
-	Short: "Validate the existing .arch/index.json",
+	Short: "Validate the existing .canopy/index.json",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ad, err := archdir.Find(".")
+		ad, err := canopydir.Find(".")
 		if err != nil {
 			return err
 		}

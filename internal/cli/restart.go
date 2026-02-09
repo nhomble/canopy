@@ -12,8 +12,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/nhomble/arch-index/internal/archdir"
-	"github.com/nhomble/arch-index/internal/server"
+	"github.com/nhomble/canopy/internal/canopydir"
+	"github.com/nhomble/canopy/internal/server"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +21,7 @@ var restartCmd = &cobra.Command{
 	Use:   "restart",
 	Short: "Stop the running server and start a fresh one",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ad, err := archdir.Find(".")
+		ad, err := canopydir.Find(".")
 		if err != nil {
 			return err
 		}

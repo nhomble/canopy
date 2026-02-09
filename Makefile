@@ -1,11 +1,11 @@
-BINARY := arch-index
-MODULE := github.com/nicolas/arch-index
+BINARY := canopy
+MODULE := github.com/nhomble/canopy
 VERSION ?= dev
 
 .PHONY: build test test-e2e clean install
 
 build:
-	go build -ldflags "-X main.version=$(VERSION)" -o $(BINARY) ./cmd/arch-index
+	go build -ldflags "-X main.version=$(VERSION)" -o $(BINARY) ./cmd/canopy
 
 test:
 	go test ./...
@@ -17,4 +17,4 @@ clean:
 	rm -f $(BINARY)
 
 install:
-	go install -ldflags "-X main.version=$(VERSION)" ./cmd/arch-index
+	go install -ldflags "-X main.version=$(VERSION)" ./cmd/canopy

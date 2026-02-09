@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nhomble/arch-index/internal/archdir"
-	"github.com/nhomble/arch-index/internal/patterns"
-	"github.com/nhomble/arch-index/internal/prompt"
-	"github.com/nhomble/arch-index/internal/scanner"
+	"github.com/nhomble/canopy/internal/canopydir"
+	"github.com/nhomble/canopy/internal/patterns"
+	"github.com/nhomble/canopy/internal/prompt"
+	"github.com/nhomble/canopy/internal/scanner"
 	"github.com/spf13/cobra"
 )
 
@@ -23,8 +23,8 @@ var prepareCmd = &cobra.Command{
 			target = args[0]
 		}
 
-		// Find .arch directory
-		ad, err := archdir.Find(".")
+		// Find .canopy directory
+		ad, err := canopydir.Find(".")
 		if err != nil {
 			return err
 		}
@@ -76,7 +76,7 @@ var prepareCmd = &cobra.Command{
 			fmt.Print(rendered)
 		}
 
-		// Also save to .arch/prompts/
+		// Also save to .canopy/prompts/
 		promptPath := ad.PromptPath("analyze-root.md")
 		os.WriteFile(promptPath, []byte(rendered), 0o644)
 

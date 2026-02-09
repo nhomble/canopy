@@ -1,4 +1,4 @@
-module github.com/nhomble/arch-index
+module github.com/nhomble/canopy
 
 go 1.25.6
 

@@ -1,4 +1,0 @@
--- This file intentionally left minimal.
--- Setup is handled by the plugin manager (lazy.nvim) calling require('arch-index').setup().
--- For manual installation without a plugin manager, add to your init.lua:
---   require('arch-index').setup()

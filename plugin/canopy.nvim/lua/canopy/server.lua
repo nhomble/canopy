@@ -1,14 +1,14 @@
-local port_mod = require("arch-index.port")
+local port_mod = require("canopy.port")
 
 local M = {}
 
 -- Binary path, set via M.set_binary() from init.lua setup
-local binary = "arch-index"
+local binary = "canopy"
 
 -- Per-root server state: root_path → { job_id = N, port = N }
 local servers = {}
 
---- Set the binary path for the arch-index CLI.
+--- Set the binary path for the canopy CLI.
 --- @param path string
 function M.set_binary(path)
   binary = path
@@ -35,7 +35,7 @@ function M.is_running(root)
   return vim.v.shell_error == 0 and vim.trim(output) == "200"
 end
 
---- Start the arch-index server for a repo root.
+--- Start the canopy server for a repo root.
 --- @param root string Absolute path (no trailing slash)
 --- @return boolean success
 function M.start(root)
@@ -49,7 +49,7 @@ function M.start(root)
 
   -- Check binary exists
   if vim.fn.executable(binary) ~= 1 then
-    vim.notify("arch-index: binary not found: " .. binary, vim.log.levels.WARN)
+    vim.notify("canopy: binary not found: " .. binary, vim.log.levels.WARN)
     return false
   end
 
@@ -66,7 +66,7 @@ function M.start(root)
   })
 
   if job_id <= 0 then
-    vim.notify("arch-index: failed to start server", vim.log.levels.ERROR)
+    vim.notify("canopy: failed to start server", vim.log.levels.ERROR)
     return false
   end
 
@@ -74,7 +74,7 @@ function M.start(root)
   return true
 end
 
---- Stop the arch-index server for a repo root.
+--- Stop the canopy server for a repo root.
 --- @param root string Absolute path (no trailing slash)
 function M.stop(root)
   root = root:gsub("/$", "")
@@ -82,7 +82,7 @@ function M.stop(root)
   if state then
     vim.fn.jobstop(state.job_id)
     servers[root] = nil
-    vim.notify("arch-index: server stopped", vim.log.levels.INFO)
+    vim.notify("canopy: server stopped", vim.log.levels.INFO)
     return
   end
 
@@ -94,7 +94,7 @@ function M.stop(root)
   })
 end
 
---- Restart the arch-index server for a repo root.
+--- Restart the canopy server for a repo root.
 --- @param root string
 function M.restart(root)
   root = root:gsub("/$", "")

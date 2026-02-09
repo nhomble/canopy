@@ -1,5 +1,5 @@
 # Binary
-/arch-index
+/canopy
 
 # Generated analysis artifacts
 analysis-result.json
@@ -11,5 +11,5 @@ architecture-navigator-spec.md
 # Claude Code
 .claude/
 
-# .arch is generated per-repo, not part of source
-.arch/
+# .canopy is generated per-repo, not part of source
+.canopy/

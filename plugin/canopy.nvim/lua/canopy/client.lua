@@ -1,6 +1,6 @@
 local M = {}
 
---- Perform a synchronous GET request to the arch-index server.
+--- Perform a synchronous GET request to the canopy server.
 --- @param url string Full URL to fetch
 --- @return table|nil data Parsed JSON response
 --- @return string|nil err Error message on failure

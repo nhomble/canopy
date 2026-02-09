@@ -1,6 +1,6 @@
-local cache = require("arch-index.cache")
-local client = require("arch-index.client")
-local ui = require("arch-index.ui")
+local cache = require("canopy.cache")
+local client = require("canopy.client")
+local ui = require("canopy.ui")
 
 local M = {}
 
@@ -16,7 +16,7 @@ function M.for_current_file(base_url)
   local bufnr = vim.api.nvim_get_current_buf()
   local ctx = cache.get(bufnr, base_url)
   if not ctx then
-    vim.notify("arch-index: no context for this file", vim.log.levels.WARN)
+    vim.notify("canopy: no context for this file", vim.log.levels.WARN)
     return
   end
 
@@ -30,7 +30,7 @@ function M.for_current_file(base_url)
   end
 
   if #through_ids == 0 then
-    vim.notify("arch-index: no flows through this file", vim.log.levels.INFO)
+    vim.notify("canopy: no flows through this file", vim.log.levels.INFO)
     return
   end
 
@@ -50,7 +50,7 @@ function M.for_current_file(base_url)
   end
 
   if #flows == 0 then
-    vim.notify("arch-index: no flows through this file", vim.log.levels.INFO)
+    vim.notify("canopy: no flows through this file", vim.log.levels.INFO)
     return
   end
 

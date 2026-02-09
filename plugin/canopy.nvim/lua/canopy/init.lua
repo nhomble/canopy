@@ -1,12 +1,12 @@
-local cache = require("arch-index.cache")
-local client = require("arch-index.client")
-local server_mod = require("arch-index.server")
+local cache = require("canopy.cache")
+local client = require("canopy.client")
+local server_mod = require("canopy.server")
 
 local M = {}
 
 M.config = {
   base_url = nil, -- nil = auto-detect per repo; set to override for all repos
-  binary = "arch-index", -- path to arch-index binary (if not on PATH, use absolute path)
+  binary = "canopy", -- path to canopy binary (if not on PATH, use absolute path)
 }
 
 local setup_done = false
@@ -33,36 +33,36 @@ function M.setup(opts)
   end
 
   -- Commands
-  vim.api.nvim_create_user_command("ArchContext", function()
+  vim.api.nvim_create_user_command("CanopyContext", function()
     local bufnr = vim.api.nvim_get_current_buf()
     local url = cache.base_url_for(bufnr, M.config.base_url)
     if not url then
-      vim.notify("arch-index: not in an arch-index project", vim.log.levels.WARN)
+      vim.notify("canopy: not in a canopy project", vim.log.levels.WARN)
       return
     end
     local ctx = cache.get(bufnr, url)
     if not ctx then
-      vim.notify("arch-index: no context for this file", vim.log.levels.WARN)
+      vim.notify("canopy: no context for this file", vim.log.levels.WARN)
       return
     end
-    require("arch-index.ui").show_context(ctx)
+    require("canopy.ui").show_context(ctx)
   end, { desc = "Show architectural context for current file" })
 
-  vim.api.nvim_create_user_command("ArchFlow", function()
+  vim.api.nvim_create_user_command("CanopyFlow", function()
     local bufnr = vim.api.nvim_get_current_buf()
     local url = cache.base_url_for(bufnr, M.config.base_url)
     if not url then
-      vim.notify("arch-index: not in an arch-index project", vim.log.levels.WARN)
+      vim.notify("canopy: not in a canopy project", vim.log.levels.WARN)
       return
     end
-    require("arch-index.flows").for_current_file(url)
+    require("canopy.flows").for_current_file(url)
   end, { desc = "Show flows through current file" })
 
-  vim.api.nvim_create_user_command("ArchOpen", function()
+  vim.api.nvim_create_user_command("CanopyOpen", function()
     local bufnr = vim.api.nvim_get_current_buf()
     local url = cache.base_url_for(bufnr, M.config.base_url)
     if not url then
-      vim.notify("arch-index: not in an arch-index project", vim.log.levels.WARN)
+      vim.notify("canopy: not in a canopy project", vim.log.levels.WARN)
       return
     end
     local cmd
@@ -74,38 +74,38 @@ function M.setup(opts)
       cmd = { "xdg-open", url }
     end
     vim.fn.jobstart(cmd, { detach = true })
-  end, { desc = "Open arch-index web UI in browser" })
+  end, { desc = "Open canopy web UI in browser" })
 
-  vim.api.nvim_create_user_command("ArchStart", function()
+  vim.api.nvim_create_user_command("CanopyStart", function()
     local root = cache.find_project_root(vim.api.nvim_get_current_buf())
     if not root then
-      vim.notify("arch-index: not in an arch-index project", vim.log.levels.WARN)
+      vim.notify("canopy: not in a canopy project", vim.log.levels.WARN)
       return
     end
     server_mod.start(root)
-  end, { desc = "Start arch-index server for current project" })
+  end, { desc = "Start canopy server for current project" })
 
-  vim.api.nvim_create_user_command("ArchStop", function()
+  vim.api.nvim_create_user_command("CanopyStop", function()
     local root = cache.find_project_root(vim.api.nvim_get_current_buf())
     if not root then
-      vim.notify("arch-index: not in an arch-index project", vim.log.levels.WARN)
+      vim.notify("canopy: not in a canopy project", vim.log.levels.WARN)
       return
     end
     server_mod.stop(root)
-  end, { desc = "Stop arch-index server for current project" })
+  end, { desc = "Stop canopy server for current project" })
 
-  vim.api.nvim_create_user_command("ArchRestart", function()
+  vim.api.nvim_create_user_command("CanopyRestart", function()
     local root = cache.find_project_root(vim.api.nvim_get_current_buf())
     if not root then
-      vim.notify("arch-index: not in an arch-index project", vim.log.levels.WARN)
+      vim.notify("canopy: not in a canopy project", vim.log.levels.WARN)
       return
     end
     server_mod.restart(root)
-  end, { desc = "Restart arch-index server for current project" })
+  end, { desc = "Restart canopy server for current project" })
 
   -- Auto-start server and prefetch context on BufEnter
   vim.api.nvim_create_autocmd("BufEnter", {
-    group = vim.api.nvim_create_augroup("arch-index", { clear = true }),
+    group = vim.api.nvim_create_augroup("canopy", { clear = true }),
     callback = function(ev)
       local root = cache.find_project_root(ev.buf)
       if not root then
@@ -135,7 +135,7 @@ function M.setup(opts)
 end
 
 --- Return a statusline string for the current buffer.
---- Suitable for lualine: lualine_x = { require('arch-index').statusline }
+--- Suitable for lualine: lualine_x = { require('canopy').statusline }
 --- @return string
 function M.statusline()
   local bufnr = vim.api.nvim_get_current_buf()
@@ -149,11 +149,11 @@ function M.statusline()
 
   local url = cache.base_url_for(bufnr, M.config.base_url)
   if not url then
-    return "arch:" .. port_str
+    return "canopy:" .. port_str
   end
   local ctx = cache.get(bufnr, url)
   if not ctx then
-    return "arch:" .. port_str
+    return "canopy:" .. port_str
   end
 
   local parts = {}
@@ -168,10 +168,10 @@ function M.statusline()
   end
 
   if #parts == 0 then
-    return "arch:" .. port_str
+    return "canopy:" .. port_str
   end
 
-  return ":" .. port_str .. " [" .. table.concat(parts, " | ") .. "]"
+  return "canopy:" .. port_str .. " [" .. table.concat(parts, " | ") .. "]"
 end
 
 return M
