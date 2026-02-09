@@ -57,7 +57,6 @@ function M.start(root)
     binary, "serve", "--port", tostring(p),
   }, {
     cwd = root,
-    detach = true,
     on_exit = function(_, code)
       local state = servers[root]
       if state and state.job_id == job_id then
